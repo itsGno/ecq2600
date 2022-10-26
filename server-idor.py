@@ -187,4 +187,4 @@ def page_not_found(e):
     return redirect('/')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=31337, debug=True)
+    app.run(host='0.0.0.0', port=31337, debug=False)
