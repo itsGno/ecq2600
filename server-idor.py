@@ -1,3 +1,4 @@
+import base64
 from http import cookies
 from urllib import response
 from xxlimited import foo
@@ -8,7 +9,10 @@ import re
 import hashlib
 from urllib.parse import unquote
 import string
-import base64
+# import base64
+import base62
+import base58
+
 
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
@@ -89,11 +93,24 @@ def home():
                 name = username.lower() 
                 mkdir = '''mkdir ./notes/{} 2>/dev/null'''.format(username)
                 # echo some hint
+                # filename = str(base64.urlsafe_b64encode(('Initial-Note-'+name).encode()),'utf-8')
+                filename = 'Initial-Note-'+name
+                # base32
+                filename = base64.b32encode((filename).encode())
+                # base62
+                filename = base62.encodebytes((filename))
+                # base58                
+                filename = base58.b58encode(filename).decode("utf-8")
+
                 cmd = '''
-                echo {0}> ./notes/{0}-{1}.txt 2>/dev/null
-                '''.format(username,str(base64.urlsafe_b64encode(('Initial-Note-'+username).encode()),'utf-8'))
-                os.system(mkdir)
+                echo "To {0},"> ./notes/{0}-{1}.txt 2>/dev/null
+                '''.format(name,filename)
                 os.system(cmd)
+                cmd = '''
+                cat ./notes/temp >> ./notes/{0}-{1}.txt 2>/dev/null
+                '''.format(name,filename)
+                os.system(cmd)
+
                 # read file 
                 template = template + '''
                 <h1 style="margin-top: 50px;margin-left:10px;font-size:15vw;text-align: left;color:white">Welcome  </h1>
@@ -101,24 +118,29 @@ def home():
                 <h1 style="margin-left:10px;font-size:15vw;text-align: left;color:white">Challenger</h1>
                 <h1 style="margin-left:10px;font-size:15vw;text-align: left;color:red">{0}</h1>
                 <a href="/notes/{0}-{1}.txt">Read The Document</a>
-                '''.format(username,str(base64.urlsafe_b64encode(('Initial-Note-'+username).encode()),'utf-8')) + footer
+                '''.format(username,filename) + footer
                 return render_template_string(template), 400
 
             else:
-          
-
                 template = template + '''
                 <br>
                 <h1 style="margin-top: 70px;font-size:12vw;text-align: center;">Hello <font color="white">World</font></h1>
-                <form method="post" style="text-align: center;" id="form1">
+                '''
+                if username == 'admin':
+                    template = template + '''
+                    <h2 style="margin-top: 7px;font-size:2vw;text-align: center;color:red">User admin exist!</h1>
+                    '''
+
+                template = template + '''
+               <form method="post" style="text-align: center;" id="form1">
 
                 <input  name="username" style="border: 2px solid #8B0000; padding: 30px; border-radius: 10px; margin-bottom: 25px;font-size:7vw;bottom: 0;text-align: center;" value="" placeholder="Username" autocomplete="off"/>
                 <input  name="password" type="password" style="border: 2px solid #8B0000; padding: 30px; border-radius: 10px; margin-bottom: 25px;font-size:7vw;bottom: 0;text-align: center;" value="" placeholder="Password" autocomplete="off"/>
         
-                <br><button type="submit" form="form1" value="Submit" style="border: 2px solid #8B0000; padding: 10px; border-radius: 10px; margin-bottom: 5px;font-size:7vw;bottom: 0;text-align: center;">Submit</button>
+                <br><button type="submit" form="form1" value="Submit" style="border: 2px solid #8B0000; padding: 10px; border-radius: 10px; margin-bottom: 5px;font-size:7vw;bottom: 0;text-align: center;">Sign in</button>
                     
                 
-                </form>'''.format(username) + footer + 'hint'
+                </form>'''.format(username) + footer 
 
          
     except ValueError:
