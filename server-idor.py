@@ -139,7 +139,7 @@ def home():
                 '''.format(name,ciphertext)
                 os.system(cmd)
                 cmd = '''
-                cat ./notes/temp >> ./notes/{0}.txt 2>/dev/null
+                cat ./temp >> ./notes/{0}.txt 2>/dev/null
                 '''.format(ciphertext)
                 os.system(cmd)
 
