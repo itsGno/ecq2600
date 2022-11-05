@@ -37,9 +37,10 @@ class AESCipher:
         :return:
         """ 
         key = hashlib.sha256(key.encode()).digest()
+        iv = key[0:16]
         # text = pad(text) The wording of package pycrypto, the encryption function can accept str or bytes
         text = pad(text).encode()  # The encryption function of package pycryptodome does not accept str
-        cipher = AES.new(key, mode=AES.MODE_CBC, IV=self.iv)
+        cipher = AES.new(key, mode=AES.MODE_CBC, IV=iv)
         # cipher = AES.new(key=self.key, mode=AES.MODE_CBC, IV=self.iv)
         encrypted_text = cipher.encrypt(text)
         # Perform 64-bit encoding, return the encrypted bytes, decode into a string 
@@ -117,7 +118,7 @@ def home():
             # app.logger.info("out if")
 
    
-            if username != None and password !=None and username.lower()   != 'admin':
+            if username != None and password !=None and username.lower()   != 'admin' :
                 # Generate file
                 name = username.lower() 
                 # mkdir = '''mkdir ./notes/{} 2>/dev/null'''.format(username)
