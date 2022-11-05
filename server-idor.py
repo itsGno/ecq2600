@@ -13,6 +13,51 @@ import string
 import base62
 import base58
 
+import base64
+from Crypto.Cipher import AES
+# from Crypto import Random
+BS = 16
+pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS) 
+unpad = lambda s : s[:-ord(s[len(s)-1:])]
+
+
+class AESCipher:
+    def __init__(self):
+        # self.iv = base64.b64decode('kfJMm0MpQMwDhS03yPkgsFrw5sqY3+CaxSVdrYJNAKQ=')  # key
+        self.key = base64.b64decode('kfJMm0MpQMwDhS03yPkgsFrw5sqY3+CaxSVdrYJNAKQ=')  # key
+        # 0zHDs5aMIW5s2RCIzLc1Wg==
+        self.iv =  base64.b64decode('MDAwMDAwMDAwMDAwMDAwMA==')  # offset
+        # print('IV:',base64.b64encode(self.iv),'\nKEY:',base64.b64encode(self.key))
+        # print('==============================\nIV :',base64.b64encode(self.iv),'\nKey :',base64.b64encode(self.key))
+
+    def encrypt(self, text,key):
+        """
+        Encryption: first add bits, then AES encryption, then base64 encoding
+        :param text: the plain text to be encrypted
+        :return:
+        """ 
+        key = hashlib.sha256(key.encode()).digest()
+        # text = pad(text) The wording of package pycrypto, the encryption function can accept str or bytes
+        text = pad(text).encode()  # The encryption function of package pycryptodome does not accept str
+        cipher = AES.new(key, mode=AES.MODE_CBC, IV=self.iv)
+        # cipher = AES.new(key=self.key, mode=AES.MODE_CBC, IV=self.iv)
+        encrypted_text = cipher.encrypt(text)
+        # Perform 64-bit encoding, return the encrypted bytes, decode into a string 
+        return base64.b64encode(encrypted_text).decode('utf-8')
+
+    def decrypt(self, encrypted_text):
+        """
+        Decryption: the offset is key[0:16]; first base64 decryption, then AES decryption, and then cancel the bit supplement
+        :param encrypted_text: encrypted ciphertext
+        :return:
+        """
+        encrypted_text = base64.b64decode(encrypted_text)
+        cipher = AES.new(key=self.key, mode=AES.MODE_CBC, IV=self.iv)
+        decrypted_text = cipher.decrypt(encrypted_text)
+        return unpad(decrypted_text)
+
+
+
 
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
@@ -71,27 +116,11 @@ def home():
     try:
             # app.logger.info("out if")
 
-        # if session['cookie'] != None:
-            # if (username == 'test' and password =='123qweasd')  or session['cookie'] == 'ggasd':
-            #     # app.logger.info("in if")
-            #     session['cookie'] = 'ggasd'
-            #     template = template + '''
-            #     <br>
-            #     <h1 style="margin-top: 70px;font-size:12vw;text-align: center;">Hello <font color="white">World</font></h1>
-            #     <form method="post" style="text-align: center;" id="form1">
-
-            #     <input  name="name" type="text" value="test" style="border: 2px solid #8B0000; padding: 30px; border-radius: 10px; margin-bottom: 25px;font-size:7vw;bottom: 0;text-align: center;" value="" placeholder="Filename" autocomplete="off"/>
-            #     <input  name="content" type="text" value="123qweasd" style="border: 2px solid #8B0000; padding: 30px; border-radius: 10px; margin-bottom: 25px;font-size:7vw;bottom: 0;text-align: center;" value="" placeholder="Content" autocomplete="off"/>
-        
-            #     <br><button type="submit" form="form1" value="Submit" style="border: 2px solid #8B0000; padding: 10px; border-radius: 10px; margin-bottom: 5px;font-size:7vw;bottom: 0;text-align: center;">Submit</button>
-                    
-                
-            #     </form>'''.format(username) + footer + 'hint'
-                        
-            if username != None and password !=None and username != 'admin':
+   
+            if username != None and password !=None and username.lower()   != 'admin':
                 # Generate file
                 name = username.lower() 
-                mkdir = '''mkdir ./notes/{} 2>/dev/null'''.format(username)
+                # mkdir = '''mkdir ./notes/{} 2>/dev/null'''.format(username)
                 # echo some hint
                 # filename = str(base64.urlsafe_b64encode(('Initial-Note-'+name).encode()),'utf-8')
                 filename = 'Initial-Note-'+name
@@ -101,14 +130,16 @@ def home():
                 filename = base62.encodebytes((filename))
                 # base58                
                 filename = base58.b58encode(filename).decode("utf-8")
-
+                ciphertext = AESCipher().encrypt(filename,name)
+                # ciphertext, tag = cipher.encrypt(filename)
+                ciphertext = base64.urlsafe_b64encode(ciphertext.encode()).decode("utf-8")
                 cmd = '''
-                echo "To {0},"> ./notes/{0}-{1}.txt 2>/dev/null
-                '''.format(name,filename)
+                echo "To {0},"> ./notes/{1}.txt 2>/dev/null
+                '''.format(name,ciphertext)
                 os.system(cmd)
                 cmd = '''
-                cat ./notes/temp >> ./notes/{0}-{1}.txt 2>/dev/null
-                '''.format(name,filename)
+                cat ./notes/temp >> ./notes/{0}.txt 2>/dev/null
+                '''.format(ciphertext)
                 os.system(cmd)
 
                 # read file 
@@ -117,8 +148,8 @@ def home():
                 <h1 style="margin-left:10px;font-size:15vw;text-align: left;color:red">New</h1>
                 <h1 style="margin-left:10px;font-size:15vw;text-align: left;color:white">Challenger</h1>
                 <h1 style="margin-left:10px;font-size:15vw;text-align: left;color:red">{0}</h1>
-                <a href="/notes/{0}-{1}.txt">Read The Document</a>
-                '''.format(username,filename) + footer
+                <a href="/notes/{1}.txt">Read The Document</a>
+                '''.format(name,ciphertext) + footer
                 return render_template_string(template), 400
 
             else:
@@ -126,10 +157,11 @@ def home():
                 <br>
                 <h1 style="margin-top: 70px;font-size:12vw;text-align: center;">Hello <font color="white">World</font></h1>
                 '''
-                if username == 'admin':
-                    template = template + '''
-                    <h2 style="margin-top: 7px;font-size:2vw;text-align: center;color:red">User admin exist!</h1>
-                    '''
+                if username != None:
+                    if username.lower() == 'admin':
+                        template = template + '''
+                        <h2 style="margin-top: 7px;font-size:2vw;text-align: center;color:red">User admin exist!</h1>
+                        '''
 
                 template = template + '''
                <form method="post" style="text-align: center;" id="form1">
@@ -187,4 +219,4 @@ def page_not_found(e):
     return redirect('/')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=31337, debug=False)
+    app.run(host='0.0.0.0', port=31337, debug=True)
