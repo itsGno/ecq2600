@@ -161,7 +161,7 @@ def home():
                 if username != None:
                     if username.lower() == 'admin':
                         template = template + '''
-                        <h2 style="margin-top: 7px;font-size:2vw;text-align: center;color:red">User admin exist!</h1>
+                        <h2 style="margin-top: 7px;font-size:2vw;text-align: center;color:white">User admin exist!</h1>
                         '''
 
                 template = template + '''
