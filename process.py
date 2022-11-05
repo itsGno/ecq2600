@@ -14,6 +14,7 @@ class FILE_HANDELING(object):
             startline = 0
             endline = 0
             app.logger.error("xxxxx")
+            filename = filename+'.txt'
             f = codecs.open(r"./notes/"+filename,"r+", encoding="utf-8", errors='ignore')
             app.logger.error(f)
             f1 = open(r'templates/output.html', 'w')
