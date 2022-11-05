@@ -149,7 +149,7 @@ def home():
                 <h1 style="margin-left:10px;font-size:15vw;text-align: left;color:red">New</h1>
                 <h1 style="margin-left:10px;font-size:15vw;text-align: left;color:white">Challenger</h1>
                 <h1 style="margin-left:10px;font-size:15vw;text-align: left;color:red">{0}</h1>
-                <a href="/notes/{1}.txt">Read The Document</a>
+                <a href="/notes/{1}">Read The Document</a>
                 '''.format(name,ciphertext) + footer
                 return render_template_string(template), 400
 
