@@ -10,3 +10,29 @@ Now flatters the borders from, from the ferment of the lake to the sealed in. No
 In the limits of the budget. Now who cares to decorate. It is said to put the quiver. I would like to decorate the element of magic itself. He was neither whole nor easy to mourn. Praesent laoreet sem quis mi molestie vulputate. Lacinia ultris mauris. Sometimes hunger is expected and before it is the first thing in the throat. Curabitur tellus fear, the valley should be amet bedus in, put to decorate the nibh. Vestibulum urn nisl, the element of the thermal run in, the valley I did not give.
 
 This file is automatically created when user successfully logged in using secure encryption & encoding algorithm to generate a random filename to preventing user to access others file. 
+
+This is how file generated
+# Generate file
+name = username.lower() 
+# mkdir = '''mkdir ./notes/{} 2>/dev/null'''.format(username)
+# echo some hint
+# filename = str(base64.urlsafe_b64encode(('Initial-Note-'+name).encode()),'utf-8')
+filename = 'Initial-Note-'+name
+# base32
+filename = base64.b32encode((filename).encode())
+# base62
+filename = base62.encodebytes((filename))
+# base58                
+filename = base58.b58encode(filename).decode("utf-8")
+#AESCipher(text,key)
+ciphertext = AESCipher().encrypt(filename,name)
+# ciphertext, tag = cipher.encrypt(filename)
+ciphertext = base64.urlsafe_b64encode(ciphertext.encode()).decode("utf-8")
+cmd = '''
+echo "To {0},"> ./notes/{1}.txt 2>/dev/null
+'''.format(name,ciphertext)
+os.system(cmd)
+cmd = '''
+cat ./temp >> ./notes/{0}.txt 2>/dev/null
+'''.format(ciphertext)
+os.system(cmd)
