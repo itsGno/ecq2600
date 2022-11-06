@@ -173,7 +173,12 @@ def home():
                 <br><button type="submit" form="form1" value="Submit" style="border: 2px solid #8B0000; padding: 10px; border-radius: 10px; margin-bottom: 5px;font-size:7vw;bottom: 0;text-align: center;">Sign in</button>
                     
                 
-                </form>'''.format(username) + footer 
+                </form>
+                <h3 style="margin-top: 7px;font-size:3vw;text-align: center;"><font color="white">Hint</font></h1>
+                <h3 style="margin-top: 7px;font-size:3vw;text-align: center;"><font color="white">1. Your name is the key</font></h4>
+                <h3 style="margin-top: 7px;font-size:3vw;text-align: center;"><font color="white">2. Asymmetric</font></h4>
+                <h3 style="margin-top: 7px;font-size:3vw;text-align: center;"><font color="white">3. SHA2 also is your key</font></h4>
+                <h3 style="margin-top: 7px;font-size:3vw;text-align: center;"><font color="white">4. Mix it all in Cyberchef is enough!</font></h4>'''.format(username) + footer 
 
          
     except ValueError:
